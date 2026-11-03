@@ -1198,7 +1198,7 @@ class BrowserDriver(MuseDriver):
             cookies: dict[str, str] = {}
             expires: dict[str, int] = {}
             while time.monotonic() < cookie_deadline:
-                await asyncio.sleep(0.6)
+                await asyncio.sleep(0.8)
                 c_res = await session.send("Network.getCookies", {"urls": ["https://muse.ai", "https://www.muse.ai"]})
                 for c in c_res.get("cookies", []):
                     name, val = c.get("name"), c.get("value")
@@ -1206,7 +1206,22 @@ class BrowserDriver(MuseDriver):
                         cookies[name] = val
                         if c.get("expires") and c["expires"] > 0:
                             expires[name] = int(c["expires"])
-                if cookies.get("hatch_sess") and cookies.get("hatch_native_auth_device"):
+                logged_in_dom = await session.evaluate(
+                    """(() => {
+                      const body = (document.body ? document.body.innerText : '').toLowerCase();
+                      if (body.includes('enter your code') || body.includes('6-digit')) return false;
+                      return Boolean(document.querySelector('textarea, [contenteditable="true"]'));
+                    })()"""
+                )
+                if (cookies.get("__Host-hatch_one_tap") or logged_in_dom) and cookies.get("hatch_sess"):
+                    await asyncio.sleep(1.0)
+                    c_res2 = await session.send("Network.getCookies", {"urls": ["https://muse.ai", "https://www.muse.ai"]})
+                    for c in c_res2.get("cookies", []):
+                        name, val = c.get("name"), c.get("value")
+                        if name and val:
+                            cookies[name] = val
+                            if c.get("expires") and c["expires"] > 0:
+                                expires[name] = int(c["expires"])
                     break
 
             if missing := muse.missing_session_cookies(cookies):

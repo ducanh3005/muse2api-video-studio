@@ -1,321 +1,199 @@
-<h1 align="center">muse2api</h1>
+# 🎬 Muse2API Video Studio (`muse2api-video-studio`)
 
-<p align="center">
-  An async gateway that exposes the <a href="https://muse.ai">muse.ai</a> web app as an <b>OpenAI-compatible API</b>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/API-OpenAI%20Compatible-green" alt="OpenAI Compatible" />
-  <img src="https://img.shields.io/badge/status-v0.1%20framework-orange" alt="Status" />
-  <img src="https://img.shields.io/badge/License-MIT-lightgrey" alt="License" />
-</p>
+> **OpenAI-Compatible AI Video & Animation Studio Server powered by Muse AI**  
+> Features **10s Single-Scene & 60s Multi-Scene (`1920x1080` Full HD) Video Generation**, **Zero-Cookie TinyHost OTP Auto-Login**, **100% Character & Snapshot Continuity (`master_keyframe` + `resume_from_snapshot_id`)**, and **Studio-Grade Multi-Character Voice Synchronization (`HTDemucs` + `Seed-VC 44.1kHz RMVPE + CAMPPlus + BigVGAN`)**.
 
 ---
 
-## Contents
+## 🌟 Key Capabilities
 
-- [Overview](#overview)
-- [Status](#status)
-- [Architecture](#architecture)
-- [Project layout](#project-layout)
-- [Quick start](#quick-start)
-- [API examples](#api-examples)
-- [Configuration](#configuration)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Disclaimer](#disclaimer)
+| Feature | Description |
+| :--- | :--- |
+| **🗣️ 10s Talking-Animal & Comedy Skits** | Generate `1920x1080` Full HD 3D Pixar/Zootopia/TUBAn-style talking animal & insect skits with frame-accurate single-speaker lip-sync and expressive non-speaking character reactions. |
+| **🎞️ 60s Multi-Scene Storyboard Engine** | Automatically generates a `master_keyframe.png` anchor image and chains up to **6 x 10-second scenes (`60s`)** via `resume_from_snapshot_id` for 100% visual continuity. |
+| **🎙️ Neural Voice Synchronization (`44.1 kHz`)** | Eliminates random per-scene voice drift using **HTDemucs** vocal separation + **Seed-VC 44.1kHz (`RMVPE` F0-Conditioned + `CAMPPlus` + `BigVGAN`)** + **Cepstral Formant Envelope Matching**. |
+| **🔐 Zero-Cookie TinyHost OTP Auto-Login** | Pass `"email@domain | https://tinyhost.shop/email@domain"` to `POST /admin/accounts/login` — the headless Chromium CDP driver logs in, fetches the 6-digit OTP automatically, and rotates session cookies. |
+| **🖥️ Lanczos + CAS `1920x1080` Upscaling** | Built-in FFmpeg mastering pipeline (`lanczos + accurate_rnd + full_chroma_int + cas=0.7 + unsharp`, `H.264 CRF 17`, `24fps`). |
 
-## Overview
+---
 
-muse2api turns muse.ai's chat, text-to-image and text-to-video features into standard OpenAI endpoints (`/v1/chat/completions`, `/v1/images/generations`, ...). Existing OpenAI SDKs and clients such as ChatGPT-Next-Web, LobeChat or Cherry Studio work by just changing their `base_url`.
+## 🎥 Live Video Demo Gallery (Embedded Previews + MP4 Downloads)
 
-The project focuses on **clean engineering and easy collaboration**:
+### Part A — 10-Second Talking-Animal & Slapstick Comedy Skits (`10s`)
 
-- **Pluggable drivers**: how we reach upstream is abstracted behind a `MuseDriver` interface. There are currently a mock driver and a browser (CDP) driver, plus a reserved slot for a direct-protocol (HTTP) driver. They are fully independent of each other.
-- **Strict layering**: the protocol layer, service layer, account pool and drivers each have a single responsibility and can be developed and tested on their own.
-- **Fully async**: built on FastAPI + asyncio; the CDP client uses `websockets`, so no request ever blocks a thread.
-- **Account pool**: multiple scheduling strategies, per-account concurrency limits, cooldown after failures, automatic removal of expired sessions, and automatic failover to another account.
-- **Offline development**: the mock driver needs no account and makes no network calls, so front-end and protocol work can move forward independently.
+#### 1. 🐛💨 Larva Sewer Worms Skit #1 — *The Green Aroma Cloud Attack* (`10s`)
+* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_1_larva_fart_attack_10s.mp4`**](docs/demos/demo_1_larva_fart_attack_10s.mp4)
 
-## Status
+| Animated Preview (GIF) | High-Res Frame |
+| :---: | :---: |
+| ![Larva Fart Attack 10s GIF](docs/demos/demo_1_larva_fart_attack_10s.gif) | ![Larva Fart Attack 10s Poster](docs/demos/demo_1_larva_fart_attack_10s.jpg) |
 
-> **v0.1, framework stage**: the architecture and basic features are fully written, but the test suite has not been run yet and nothing has been tested against a real muse.ai account.
+---
 
-| Module | Status | Notes |
-|---|---|---|
-| OpenAI protocol layer (chat streaming/non-streaming, images, videos, models) | ✅ Implemented | Multi-turn chat, system prompts, image input, model aliases |
-| Account pool (scheduling / cooldown / invalidation / failover) | ✅ Implemented | `lru`, `round_robin` and `affinity` strategies |
-| Background tasks (video) | ✅ Implemented | Create a task, then poll for the result; unfinished tasks are marked interrupted after a restart |
-| Admin API (account CRUD, renewal, reset, status) | ✅ Implemented | |
-| Mock driver | ✅ Implemented | Offline fake data |
-| Browser driver (Chromium + CDP) | 🧪 Needs live testing | Full chat, image and video flows are written |
-| Session renewal / keepalive | 🧪 Needs live testing | Plain HTTP, disabled by default |
-| Direct HTTP protocol driver | 🚧 Reserved | Returns 501 |
-| `/v1/images/edits` (reference images) | ✅ Implemented | Images are references for a new image; `mask` is rejected |
-| `/v1/responses` | 🚧 Reserved | Returns 501 |
-| Web console, cookie import extension, quota lookup | 🚧 Reserved | |
+#### 2. 🐛🧄 Larva Sewer Worms Skit #2 — *Garlic Breath Dizzy Stars Counterattack* (`10s`)
+* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_2_larva_garlic_breath_10s.mp4`**](docs/demos/demo_2_larva_garlic_breath_10s.mp4)
 
-## Architecture
+| Animated Preview (GIF) | High-Res Frame |
+| :---: | :---: |
+| ![Larva Garlic Breath 10s GIF](docs/demos/demo_2_larva_garlic_breath_10s.gif) | ![Larva Garlic Breath 10s Poster](docs/demos/demo_2_larva_garlic_breath_10s.jpg) |
 
-```
-          OpenAI SDK / chat clients
-                    │  HTTP (Bearer key)
-┌───────────────────▼────────────────────────────────────┐
-│ api/        Protocol: routes · validation · auth · SSE │
-├────────────────────────────────────────────────────────┤
-│ services/   Gateway (failover) · TaskManager           │
-├──────────────────────────┬─────────────────────────────┤
-│ accounts/  Account pool   │ core/  Model aliases        │
-│ strategies · cooldown ·   │        prompt conversion    │
-│ renewal                   │        media storage        │
-├──────────────────────────┴─────────────────────────────┤
-│ drivers/    MuseDriver interface (only layer that      │
-│             talks to upstream)                         │
-│   ├─ mock      offline fake data                       │
-│   ├─ browser   Chromium + CDP, one BrowserContext per  │
-│   │            account                                 │
-│   └─ http      direct protocol (reserved)              │
-├────────────────────────────────────────────────────────┤
-│ upstream/   muse.ai URLs, cookie names, session API    │
-└────────────────────────────────────────────────────────┘
-                    │
-                 muse.ai
-```
+---
 
-**How a chat request is handled**: the route resolves the model alias and merges the multi-turn `messages` into a single prompt, then hands it to the Gateway. The Gateway leases an account from the pool and asks the driver for a text stream. On failure, the account's state is updated according to the error type: accounts with an expired session are taken offline, accounts out of quota cool down, and other errors cause a short cooldown. As long as nothing has been sent to the client yet, the request is retried on another account.
+#### 3. 🐐🎒 Bipedal Student Goats Skit — *Late for School on the Narrow Bridge* (`10s`)
+* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_3_student_goats_bridge_10s.mp4`**](docs/demos/demo_3_student_goats_bridge_10s.mp4)
 
-For streaming requests, the first chunk is fetched before returning 200. Errors such as "no account available" or "upstream authentication failed" therefore come back with a proper HTTP status code instead of a stream that breaks halfway.
+| Animated Preview (GIF) | High-Res Frame |
+| :---: | :---: |
+| ![Student Goats Bridge 10s GIF](docs/demos/demo_3_student_goats_bridge_10s.gif) | ![Student Goats Bridge 10s Poster](docs/demos/demo_3_student_goats_bridge_10s.jpg) |
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
+---
 
-## Project layout
+#### 4. 🐐🌲 Talking Animals Face-Off — *White Goat & Black Goat on the Log Bridge* (`10s`)
+* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_4_talking_goats_skit_10s.mp4`**](docs/demos/demo_4_talking_goats_skit_10s.mp4)
 
-```
-muse2api/
-├── src/muse2api/
-│   ├── app.py                 # FastAPI app factory and lifespan
-│   ├── config.py              # Settings (environment variables / .env)
-│   ├── errors.py              # Error hierarchy → HTTP status + OpenAI error body
-│   ├── api/
-│   │   ├── deps.py            # Auth and dependency injection
-│   │   ├── schemas.py         # OpenAI request models
-│   │   └── routes/            # chat / images / videos / media / models / admin / responses
-│   ├── services/
-│   │   ├── gateway.py         # Runs driver calls on pooled accounts, retries on another account
-│   │   ├── tasks.py           # Background long-running tasks
-│   │   └── container.py       # Service wiring
-│   ├── accounts/              # Account model, JSON store, pool, session keepalive
-│   ├── core/                  # Model registry and aliases, prompt conversion, media storage
-│   ├── drivers/
-│   │   ├── base.py            # MuseDriver interface and data types
-│   │   ├── mock.py
-│   │   ├── browser/           # cdp.py / chromium.py / dom.py / driver.py
-│   │   └── http/              # Reserved
-│   └── upstream/muse.py       # Upstream constants and session renewal
-├── tests/                     # Mock-driver tests, no network access
-├── docs/ARCHITECTURE.md
-├── TODO.md                    # Task board for contributors
-├── Dockerfile · docker-compose.yml · .env.example
-└── CONTRIBUTING.md
-```
+| Animated Preview (GIF) | High-Res Frame |
+| :---: | :---: |
+| ![Talking Goats 10s GIF](docs/demos/demo_4_talking_goats_skit_10s.gif) | ![Talking Goats 10s Poster](docs/demos/demo_4_talking_goats_skit_10s.jpg) |
 
-## Quick start
+---
 
-### Run locally
+### Part B — Full 60-Second (`6 Scenes x 10s`) Multi-Scene Series with `Seed-VC 44.1kHz` Voice Sync
+
+#### 5. 🐛💨 Full 60s Series: *Larva Sewer Worms Comedy — Fart vs. Stinky Breath* (`60s`, Voice-Locked)
+* **▶️ Watch / Download Full 60s MP4 (with `Seed-VC 44.1kHz` Synchronized Voices):** [**`docs/demos/showcase_larva_sewer_worms_60s.mp4`**](docs/demos/showcase_larva_sewer_worms_60s.mp4)
+* **Acoustic F0 Synchronization (`Seed-VC 44.1kHz + RMVPE + BigVGAN`):**
+  * **Yellow Worm (Left — Scenes 1, 3, 5):** `F0_median = 225.5 Hz / 236.2 Hz / 222.5 Hz`
+  * **Red Worm (Right — Scenes 2, 4, 6):** `F0_median = 244.1 Hz / 243.0 Hz / 244.6 Hz` (`±0.8 Hz` precision across all 3 scenes!)
+
+| Animated Preview (GIF) | 6-Scene Continuity Storyboard (`0s–60s`) |
+| :---: | :---: |
+| ![Larva Sewer Worms 60s GIF](docs/demos/showcase_larva_sewer_worms_60s.gif) | ![Larva Sewer Worms 6-Scene Grid](docs/demos/showcase_larva_sewer_worms_grid.jpg) |
+
+---
+
+#### 6. 🐐🎒 Full 60s Series: *Two Bipedal Student Goats on the Narrow Bridge* (`60s`, Voice-Locked)
+* **▶️ Watch / Download Full 60s MP4 (with `Seed-VC 44.1kHz` Synchronized Voices):** [**`docs/demos/showcase_student_goats_60s.mp4`**](docs/demos/showcase_student_goats_60s.mp4)
+* **Acoustic F0 Synchronization (`Seed-VC 44.1kHz + RMVPE + BigVGAN`):**
+  * **White Student Goat (Left — Scenes 1, 3, 5):** `F0_median = 267.3 Hz / 261.9 Hz / 269.8 Hz`
+  * **Black Student Goat (Right — Scenes 2, 4, 6):** `F0_median = 182.8 Hz / 181.7 Hz / 179.6 Hz`
+
+| Animated Preview (GIF) | 6-Scene Continuity Storyboard (`0s–60s`) |
+| :---: | :---: |
+| ![Student Goats 60s GIF](docs/demos/showcase_student_goats_60s.gif) | ![Student Goats 6-Scene Grid](docs/demos/showcase_student_goats_grid.jpg) |
+
+---
+
+## 🎭 Ready-to-Run 10s English Talking-Animal Comedy Skit Prompts (`scripts/gen_english_skit_demos.py`)
+
+Run all 3 English talking-animal comedy skits with one command via [`scripts/gen_english_skit_demos.py`](scripts/gen_english_skit_demos.py):
 
 ```bash
-git clone https://github.com/www222fff/muse2api.git
-cd muse2api
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]'
-cp .env.example .env      # defaults to MUSE2API_DRIVER=mock, no account needed
-python -m muse2api        # listens on http://127.0.0.1:18610 by default
+python scripts/gen_english_skit_demos.py
 ```
 
-If `MUSE2API_API_KEY` is not set, a key is generated on first start and saved to `data/api_key`.
+### Preset 1: 🐱🐶 *The Birthday Cake Interrogation* (Detective Cat & Guilty Golden Retriever)
+```json
+{
+  "model": "muse-video",
+  "size": "16:9",
+  "duration": 10,
+  "prompt": "3D Pixar and Zootopia style animated comedy skit, 16:9 widescreen, 8K cinema clarity. In a bright modern kitchen beside a half-eaten strawberry birthday cake, a chubby British Shorthair detective cat wearing a tiny plaid deerstalker hat and round glasses stands on the counter pointing a magnifying glass at a guilty Golden Retriever sitting below with pink frosting smeared all over his nose. ONLY the detective cat opens and moves his mouth, speaking in a dramatic, witty British male detective voice: \"Look me in the eyes, Barnaby! You expect me to believe the birthday cake jumped off the table and attacked your nose?!\" while the Golden Retriever keeps his mouth completely closed, wagging his tail nervously with wide guilty puppy eyes."
+}
+```
 
-### Docker
+### Preset 2: 🐹🐻 *Personal Trainer Hamster & The Grizzly Bear*
+```json
+{
+  "model": "muse-video",
+  "size": "16:9",
+  "duration": 10,
+  "prompt": "3D Pixar and Zootopia style animated comedy skit, 16:9 widescreen, 8K cinema clarity. Inside a sunny modern fitness gym, a tiny chubby golden hamster wearing a miniature red sweatband and sport tank top stands on a bench pointing enthusiastically at a giant exhausted Grizzly Bear who is sweating heavily while struggling to curl tiny two-pound pink dumbbells. ONLY the tiny hamster opens and moves his mouth, yelling in a hilarious high-energy American gym coach voice: \"Come on Big Bruno, don't quit on me now! Those two-pound pink dumbbells aren't gonna lift themselves, lightweight baby!\" while the giant Grizzly Bear keeps his mouth closed, huffing and rolling his eyes in comic exhaustion."
+}
+```
+
+### Preset 3: 🐧🐸 *Late-Night Animal Gossip Podcast* (Emperor Penguin & Sassy Tree Frog)
+```json
+{
+  "model": "muse-video",
+  "size": "16:9",
+  "duration": 10,
+  "prompt": "3D Pixar and Sing style animated comedy skit, 16:9 widescreen, 8K cinema clarity. Inside a trendy neon-lit podcast studio with professional broadcast microphones on boom arms, on the left sits a dapper Emperor Penguin wearing a red bowtie and headphones who keeps his beak completely closed and nods in shocked amazement; on the right sits a sassy bright-green Tree Frog wearing studio headphones who gestures dramatically with her webbed hands while speaking into the mic in a sassy, expressive American female comedy voice: \"And I told her, honey, if that toad is still hopping into other lily pads at midnight, he is definitely not your prince!\""
+}
+```
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    A["Client App / CLI / SDK"] -->|"POST /v1/videos (duration=10 or 60)"| B["FastAPI Gateway (muse2api)"]
+    B --> C["Account Pool & Auto TinyHost OTP Login"]
+    C --> D["Headless Chromium CDP Driver"]
+    D -->|"Scene 1"| E["Generate master_keyframe.png + Scene 1 Video (snapshot_1)"]
+    E -->|"Scenes 2..6"| F["Chain resume_from_snapshot_id (snapshot_2..snapshot_6)"]
+    F --> G["FFmpeg 1080p Lanczos + CAS Upscaler"]
+    G --> H["scripts/sync_voices_seed_vc.py"]
+    H --> I["Stage 1: HTDemucs Vocal / SFX Stem Separation"]
+    I --> J["Stage 2: Seed-VC 44.1kHz (Whisper + RMVPE F0 + CAMPPlus + BigVGAN)"]
+    J --> K["Stage 3: Cepstral Spectral Envelope Matching + SFX Re-Mix"]
+    K --> L["Final 1920x1080 MP4 (100% Character & Voice Continuity)"]
+```
+
+---
+
+## 🚀 Quick Start & Software Integration
+
+### 1. Installation & Startup
 
 ```bash
+git clone https://github.com/ducanh3005/muse2api-video-studio.git
+cd muse2api-video-studio
+
+uv venv .venv --python 3.12
+uv pip install --python .venv/bin/python -e .
+
 cp .env.example .env
-docker compose up -d --build
+.venv/bin/python -m muse2api
 ```
 
-### Use a real account (browser driver)
-
-1. Install Chromium or Chrome and set `MUSE2API_DRIVER=browser` in `.env`.
-2. Export the cookies from a browser that is logged in to muse.ai. At least `hatch_sess`, `hatch_gw`, `hatch_vml` and `hatch_native_auth_device` are required.
-3. Import the account through the Admin API (see the example below).
-
-## API examples
-
-Every `/v1/*` endpoint requires the header `Authorization: Bearer <API_KEY>`. The `/admin/*` endpoints use `MUSE2API_ADMIN_KEY`, which defaults to the API key when unset.
-
-**Chat (streaming)**
+### 2. Zero-Cookie Auto-Login (`POST /admin/accounts/login`)
 
 ```bash
-curl http://localhost:18610/v1/chat/completions \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello"}],"stream":true}'
+curl -X POST http://127.0.0.1:18610/admin/accounts/login \
+  -H "Authorization: Bearer sk-muse-local" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account": "your_account@ccpro.click | https://tinyhost.shop/your_account@ccpro.click",
+    "label": "studio-worker-1"
+  }'
 ```
 
-**OpenAI Python SDK**
-
-```python
-from openai import OpenAI
-
-client = OpenAI(base_url="http://localhost:18610/v1", api_key="<API_KEY>")
-resp = client.chat.completions.create(
-    model="muse-chat",
-    messages=[{"role": "user", "content": "Write a short poem about autumn"}],
-)
-print(resp.choices[0].message.content)
-```
-
-**Text to image**
+### 3. Multi-Scene Neural Voice Synchronization (`Seed-VC 44.1kHz`)
 
 ```bash
-curl http://localhost:18610/v1/images/generations \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"A cyberpunk street on a rainy night","size":"16:9","response_format":"url"}'
+python scripts/sync_voices_seed_vc.py \
+  --input data/media/vid_raw_60s.mp4 \
+  --output data/media/vid_synced_60s.mp4 \
+  --work-dir ./work_audio \
+  --seed-vc-dir ./seed-vc \
+  --v1-ref-scene 1 \
+  --v2-ref-scene 2 \
+  --v1-semitones 0.0 \
+  --v2-semitones -2.0
 ```
 
-**Transparent background**
+---
 
-muse.ai only returns flat RGB images, so `"background":"transparent"` cuts the subject out locally (BiRefNet + edge colour estimation) and returns an RGBA PNG. Requires `pip install -e '.[matting]'`; the model (~930MB) is downloaded to `~/.u2net` on first use. Expect ~30s extra per image on CPU.
+## 📚 Documentation Index
 
-```bash
-curl http://localhost:18610/v1/images/generations \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"A red fox sitting","background":"transparent"}'
-```
+- [**Developer Guide & Software Integration Manual (`docs/DEVELOPER_GUIDE.md`)**](docs/DEVELOPER_GUIDE.md)
+- [**Architecture & Internals (`docs/ARCHITECTURE.md`)**](docs/ARCHITECTURE.md)
+- [**10s English Talking-Animal Skit Batch Script (`scripts/gen_english_skit_demos.py`)**](scripts/gen_english_skit_demos.py)
+- [**44.1kHz Neural Voice Synchronization CLI (`scripts/sync_voices_seed_vc.py`)**](scripts/sync_voices_seed_vc.py)
 
-**Image from reference images**
+---
 
-`"image"` takes one reference image or a list of up to 4 (data URL, http(s) URL or bare base64). They are attached to the muse.ai message like a chat upload, and the prompt says how to use them, e.g. put a product on a model, or "the same fox, now wearing a red scarf" to keep the subject and scene. `/v1/images/edits` does the same with OpenAI-style multipart uploads, so `client.images.edit()` works; `mask` (inpainting a region) is not supported.
+## 📄 License
 
-```bash
-curl http://localhost:18610/v1/images/generations \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"A model wearing exactly this hoodie, studio photo","image":"data:image/jpeg;base64,..."}'
-
-curl http://localhost:18610/v1/images/edits \
-  -H "Authorization: Bearer $KEY" \
-  -F "image[]=@fox.png" -F "prompt=The same fox, now wearing a red scarf"
-```
-
-**Image as an async task**
-
-A sync image call (page load plus generation) can take longer than a reverse proxy allows; Cloudflare cuts it after about 100 s with HTTP 524. Add `"async": true` to get a task back, then poll it. Results are always stored as media URLs.
-
-```bash
-curl http://localhost:18610/v1/images/generations \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"A red fox sitting","async":true}'          # -> {"id":"task_xxx","object":"image.task",...}
-curl http://localhost:18610/v1/images/generations/task_xxx -H "Authorization: Bearer $KEY"
-```
-
-**Text to video (async task)**
-
-```bash
-# Create a task; returns {"id": "task_xxx", "status": "queued", ...}
-curl http://localhost:18610/v1/videos \
-  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-  -d '{"prompt":"Maple leaves falling in a light breeze","duration":5,"size":"16:9"}'
-
-# Poll the task; on success, result.url points to the video
-curl http://localhost:18610/v1/videos/task_xxx -H "Authorization: Bearer $KEY"
-```
-
-**Import an account**
-
-```bash
-curl http://localhost:18610/admin/accounts \
-  -H "Authorization: Bearer $ADMIN_KEY" -H "Content-Type: application/json" \
-  -d '{"label":"acc1","cookies":{"hatch_sess":"...","hatch_gw":"...","hatch_vml":"...","hatch_native_auth_device":"..."}}'
-```
-
-### Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/healthz` · `/readyz` | Liveness · readiness (driver state and available accounts) |
-| GET | `/v1/models` | Model list, including aliases such as `gpt-4o` and `dall-e-3` |
-| POST | `/v1/chat/completions` | Chat, streaming and non-streaming |
-| POST | `/v1/images/generations` · GET `/v1/images/generations/{id}` | Text to image (optional `image` references), returns `url` or `b64_json`; `"async": true` returns a task to poll |
-| POST | `/v1/images/edits` | Multipart `image`/`image[]` files + `prompt`, OpenAI-compatible |
-| POST | `/v1/videos` · GET `/v1/videos/{id}` | Create a video task · query a task |
-| GET | `/v1/media/{name}` | Download generated media |
-| GET/POST/PATCH/DELETE | `/admin/accounts[/{id}]` | Account CRUD |
-| POST | `/admin/accounts/{id}/renew` · `/reset` | Renew session · reset account state |
-| GET | `/admin/status` · `/admin/tasks` | Service status · task list |
-| GET/POST/PATCH/DELETE | `/admin/keys[/{id}]` | Client API keys (create returns the key once; PATCH renames / revokes) |
-| GET | `/admin/requests` · `/admin/stats?window=1h\|24h\|7d` | Request log (filters: `key_id`, `account_id`, `status=2xx\|4xx\|5xx`, `path`, `since`, `hide_polls`) · aggregates |
-| GET | `/dashboard` | Web dashboard (asks for the admin key in the browser) |
-| POST | `/v1/responses` | Reserved, currently returns 501 |
-
-### Dashboard, API keys and request log
-
-Open `http://localhost:18610/dashboard` and enter the admin key; it is kept in the browser's local storage and sent as a Bearer token to `/admin/*`. The page shows request volume, error rate and latency, the account pool (enable/disable, renew, reset), a live request log, and API key management.
-
-Besides the admin key and `MUSE2API_API_KEY` (still accepted, logged as `legacy`), `/v1/*` accepts any non-revoked key created on the dashboard or with `POST /admin/keys {"name": "..."}`. Keys look like `m2a-...` and are shown once; `data/keys.json` stores only their SHA-256 hash and an 8-character prefix. Every `/v1/*` request (except `/v1/media/*` downloads) is recorded in `data/requests.db` (SQLite) with its key, model, account, status, latency and client IP (`CF-Connecting-IP` / `X-Forwarded-For` aware). Task status polls are flagged so the dashboard and stats can leave them out.
-
-## Configuration
-
-All settings come from environment variables (prefix `MUSE2API_`) or a `.env` file. See [.env.example](.env.example) for the full list. The most common ones:
-
-| Variable | Default | Description |
-|---|---|---|
-| `MUSE2API_DRIVER` | `mock` | Driver: `mock` / `browser` / `http` |
-| `MUSE2API_HOST` · `MUSE2API_PORT` | `127.0.0.1` · `18610` | Listen address and port |
-| `MUSE2API_API_KEY` | auto-generated | Key for `/v1/*` endpoints |
-| `MUSE2API_ADMIN_KEY` | same as API key | Key for `/admin/*` endpoints |
-| `MUSE2API_REQUEST_LOG_RETENTION_DAYS` | `14` | Days of request history kept in `data/requests.db` |
-| `MUSE2API_PUBLIC_BASE` | empty | Public base URL used in media links; derived from the request when empty |
-| `MUSE2API_POOL_STRATEGY` | `lru` | Account scheduling: `lru` / `round_robin` / `affinity` |
-| `MUSE2API_MAX_FAILOVER` | `2` | Maximum number of retries on another account |
-| `MUSE2API_ACCOUNT_MAX_CONCURRENCY` | `1` | Parallel requests per account (browser driver: one tab each); 4 works well |
-| `MUSE2API_CHROMIUM_PATH` | auto-detected | Path to the browser executable |
-| `MUSE2API_KEEPALIVE_ENABLED` | `false` | Periodically renew sessions in the background |
-| `MUSE2API_MATTING_MODEL` | `birefnet-general` | Model for `background: "transparent"` (`birefnet-general-lite` is faster) |
-| `MUSE2API_BILLING_ENABLED` | `true` | Charge stored client keys' prepaid USD credit (402 when it runs out); admin, legacy and unlimited keys are free |
-| `MUSE2API_PRICE_IMAGE_USD` · `MUSE2API_PRICE_VIDEO_PER_SECOND_USD` | `0.015` · `0.006` | Price per image and per requested video second (`MUSE2API_VIDEO_DEFAULT_SECONDS`, `10`, when none is given) |
-| `MUSE2API_PRICE_CHAT_INPUT_PER_MTOK_USD` · `MUSE2API_PRICE_CHAT_OUTPUT_PER_MTOK_USD` | `1.0` · `3.0` | Chat price per million prompt / completion tokens |
-| `MUSE2API_PAYPAL_CLIENT_ID` · `MUSE2API_PAYPAL_CLIENT_SECRET` | empty | PayPal REST app credentials for self-serve checkout at `/billing`; empty disables checkout |
-| `MUSE2API_PAYPAL_ENV` | `sandbox` | `sandbox` or `live` |
-| `MUSE2API_PAYPAL_ALLOW_SANDBOX` | `false` | Allow checkout in `sandbox` (fake payments, real credit — testing only) |
-| `MUSE2API_PAYPAL_WEBHOOK_ID` | empty | ID of the webhook pointing at `/billing/paypal/webhook`; empty ignores webhooks |
-| `MUSE2API_TOPUP_MIN_USD` · `MUSE2API_TOPUP_MAX_USD` | `5` · `1000` | Allowed checkout amount range |
-| `MUSE2API_GOOGLE_CLIENT_ID` · `MUSE2API_GOOGLE_CLIENT_SECRET` | empty | Google OAuth web client for the customer portal at `/account`; empty disables it |
-| `MUSE2API_GOOGLE_REDIRECT_URI` | derived | Exact redirect URI registered at Google (default `<public base>/account/auth/google/callback`) |
-| `MUSE2API_SESSION_DAYS` | `30` | Portal sign-in session lifetime |
-
-## Roadmap
-
-All reserved modules and outstanding work are tracked in **[TODO.md](TODO.md)**, in four groups:
-
-- **Verification and live testing (do first)**: get the tests passing, test the browser driver against real accounts, and verify image/video generation and session renewal.
-- **Drivers**: direct HTTP protocol driver, conversation thread reuse, quota lookup.
-- **Protocol**: `/v1/responses`, mask-based inpainting, emulated tool calling, streaming heartbeats.
-- **Accounts, admin and operations**: more cookie import formats, browser extension, storage backends, media cleanup, per-key rate limits, Prometheus metrics.
-
-Each task lists its location, approach and definition of done. Places marked `TODO(contributors)` in the code are the reserved extension points.
-
-## Contributing
-
-You are welcome to pick up any task in [TODO.md](TODO.md). Please open an issue describing what you plan to do before you start; see [CONTRIBUTING.md](CONTRIBUTING.md) for conventions.
-
-```bash
-pytest           # all tests use the mock driver
-ruff check .     # lint
-```
-
-## Disclaimer
-
-This project is for learning and technical research only. Please comply with muse.ai's terms of service and local laws. Never commit or publish account cookies.
-
-## License
-
-[MIT](LICENSE)
+MIT License

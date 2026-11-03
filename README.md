@@ -9,19 +9,52 @@
 
 | Feature | Description |
 | :--- | :--- |
+| **⚡ Direct Noise Gateway RPC API (`MUSE2API_DRIVER=http`)** | Communicates directly with the Muse Hatch VM daemon (`wss://<vm_id>.metaaivm.com/`) over the encrypted `Noise_XX_25519_AESGCM_SHA256` RPC channel (`chat.stream`, `chat.history`, `fs.write`, `fs.raw`) — **zero DOM typing, zero dashboard clicking, 100% background API execution**. |
 | **🗣️ 10s Talking-Animal & Comedy Skits** | Generate `1920x1080` Full HD 3D Pixar/Zootopia/TUBAn-style talking animal & insect skits with frame-accurate single-speaker lip-sync and expressive non-speaking character reactions. |
 | **🎞️ 60s Multi-Scene Storyboard Engine** | Automatically generates a `master_keyframe.png` anchor image and chains up to **6 x 10-second scenes (`60s`)** via `resume_from_snapshot_id` for 100% visual continuity. |
 | **🎙️ Neural Voice Synchronization (`44.1 kHz`)** | Eliminates random per-scene voice drift using **HTDemucs** vocal separation + **Seed-VC 44.1kHz (`RMVPE` F0-Conditioned + `CAMPPlus` + `BigVGAN`)** + **Cepstral Formant Envelope Matching**. |
-| **🔐 Zero-Cookie TinyHost OTP Auto-Login** | Pass `"email@domain | https://tinyhost.shop/email@domain"` to `POST /admin/accounts/login` — the headless Chromium CDP driver logs in, fetches the 6-digit OTP automatically, and rotates session cookies. |
+| **🔐 Zero-Cookie TinyHost & Generator.email OTP Auto-Login** | Pass `"email@domain | https://tinyhost.shop/email@domain"` or `"email@domain | https://generator.email/email@domain"` to `POST /admin/accounts/login` — automatically fetches the 6-digit OTP and rotates session cookies. |
 | **🖥️ Lanczos + CAS `1920x1080` Upscaling** | Built-in FFmpeg mastering pipeline (`lanczos + accurate_rnd + full_chroma_int + cas=0.7 + unsharp`, `H.264 CRF 17`, `24fps`). |
 
 ---
 
 ## 🎥 Live Video Demo Gallery (Embedded Previews + MP4 Downloads)
 
-### Part A — 10-Second Talking-Animal & Slapstick Comedy Skits (`10s`)
+### Part A — 10-Second English Talking-Animal Comedy Skits (`1920x1080` Full HD, `10s`)
 
-#### 1. 🐛💨 Larva Sewer Worms Skit #1 — *The Green Aroma Cloud Attack* (`10s`)
+#### 1. 🐱🐶 *The Birthday Cake Interrogation* — Detective Cat & Guilty Golden Retriever (`10s`, English Dialogue)
+* **Spoken Line (British Detective Cat):** *"Look me in the eyes, Barnaby! You expect me to believe the birthday cake jumped off the table and attacked your nose?!"*
+* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_1_detective_cat_dog_10s.mp4`**](docs/demos/skit_1_detective_cat_dog_10s.mp4)
+
+| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| :---: | :---: |
+| ![Detective Cat & Dog 10s GIF](docs/demos/skit_1_detective_cat_dog_10s.gif) | ![Detective Cat & Dog 10s Poster](docs/demos/skit_1_detective_cat_dog_10s.jpg) |
+
+---
+
+#### 2. 🐹🐻 *Personal Trainer Hamster & The Grizzly Bear* (`10s`, English Dialogue)
+* **Spoken Line (Gym Coach Hamster):** *"Come on Big Bruno, don't quit on me now! Those two-pound pink dumbbells aren't gonna lift themselves, lightweight baby!"*
+* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_2_gym_hamster_bear_10s.mp4`**](docs/demos/skit_2_gym_hamster_bear_10s.mp4)
+
+| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| :---: | :---: |
+| ![Gym Hamster & Bear 10s GIF](docs/demos/skit_2_gym_hamster_bear_10s.gif) | ![Gym Hamster & Bear 10s Poster](docs/demos/skit_2_gym_hamster_bear_10s.jpg) |
+
+---
+
+#### 3. 🐧🐸 *Late-Night Animal Gossip Podcast* — Emperor Penguin & Sassy Tree Frog (`10s`, English Dialogue)
+* **Spoken Line (Sassy Tree Frog):** *"And I told her, honey, if that toad is still hopping into other lily pads at midnight, he is definitely not your prince!"*
+* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_3_podcast_penguin_frog_10s.mp4`**](docs/demos/skit_3_podcast_penguin_frog_10s.mp4)
+
+| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| :---: | :---: |
+| ![Podcast Penguin & Frog 10s GIF](docs/demos/skit_3_podcast_penguin_frog_10s.gif) | ![Podcast Penguin & Frog 10s Poster](docs/demos/skit_3_podcast_penguin_frog_10s.jpg) |
+
+---
+
+### Part B — 10-Second Slapstick & Vietnamese Talking-Animal Skits (`10s`)
+
+#### 4. 🐛💨 Larva Sewer Worms Skit #1 — *The Green Aroma Cloud Attack* (`10s`)
 * **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_1_larva_fart_attack_10s.mp4`**](docs/demos/demo_1_larva_fart_attack_10s.mp4)
 
 | Animated Preview (GIF) | High-Res Frame |

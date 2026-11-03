@@ -78,6 +78,8 @@ class _Tab:
     thread_url: str = ""
     quota_note: str = ""
     """Last ignored quota-hint snippet, so a page polled every 0.6s logs it once."""
+    rpc_session_id: str = ""
+    rpc_uploads: list[str] = field(default_factory=list)
     busy: bool = False
     stale: bool = False
     """Cookies were renewed; close this tab once it is idle."""
@@ -311,6 +313,8 @@ class BrowserDriver(MuseDriver):
         tab.turns = []
         tab.image_count = 0
         tab.thread_url = ""
+        tab.rpc_session_id = ""
+        tab.rpc_uploads = []
 
     def _load_hot(self, tab: _Tab, account: Account) -> None:
         """Restore the last conversation after a restart or a new browser tab."""
@@ -352,6 +356,15 @@ class BrowserDriver(MuseDriver):
 
     async def _on_thread(self, tab: _Tab) -> bool:
         """The open page is the saved conversation and can take another message."""
+        if tab.rpc_session_id:
+            try:
+                await self._ensure_rpc_ready(tab)
+                state = await self._state(tab)
+                if state.get("generating"):
+                    return False
+                return (state.get("agentCount") or 0) < HOT_BUBBLE_LIMIT
+            except Exception:
+                return False
         href = await self._href(tab)
         if not is_thread_url(href):
             return False
@@ -372,64 +385,144 @@ class BrowserDriver(MuseDriver):
             return False
         return (state.get("agentCount") or 0) < HOT_BUBBLE_LIMIT
 
-    async def _new_thread(self, tab: _Tab) -> None:
-        self._forget(tab)
-        await tab.session.send("Page.navigate", {"url": muse.NEW_THREAD_URL})
+    async def _ensure_rpc_ready(self, tab: _Tab) -> None:
+        """Ensure the Noise Gateway RPC transport (__hatchEarlyGatewayRuntimeState) is connected."""
+        check_js = """Boolean(
+            window.__hatchEarlyGatewayRuntimeState &&
+            window.__hatchEarlyGatewayRuntimeState.activeRuntime &&
+            window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot &&
+            window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot().isConnected &&
+            typeof window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot().sendRequest === "function"
+        )"""
+        with contextlib.suppress(CDPError, TimeoutError):
+            if await tab.session.evaluate(check_js, timeout=3.0):
+                return
+        href = await self._href(tab)
+        if "muse.ai" not in href:
+            await tab.session.send("Page.navigate", {"url": muse.SITE})
         deadline = time.monotonic() + self.settings.page_ready_timeout
-        state: dict = {}
         while time.monotonic() < deadline:
-            await asyncio.sleep(0.25)
-            # A busy page can leave Runtime.evaluate unanswered while it loads; poll again.
+            await asyncio.sleep(0.3)
             with contextlib.suppress(CDPError, TimeoutError):
-                state = await tab.session.evaluate(dom.PAGE_STATE, timeout=5.0) or {}
-                if state.get("ready"):
+                if await tab.session.evaluate(check_js, timeout=4.0):
                     return
-        head = (state.get("head") or "").lower()
-        if any(h in head for h in dom.LOGIN_HINTS):
-            raise UpstreamAuthError("muse.ai redirected to login; cookies are no longer valid")
-        raise UpstreamTimeout("muse.ai page did not become ready")
+                body = (await tab.session.evaluate("document.body ? document.body.innerText : ''", timeout=3.0) or "").lower()
+                if any(h in body for h in dom.LOGIN_HINTS):
+                    raise UpstreamAuthError("muse.ai redirected to login; cookies are no longer valid")
+        raise UpstreamTimeout("Noise Gateway RPC transport did not connect in time")
+
+    async def _new_thread(self, tab: _Tab) -> None:
+        import uuid
+        self._forget(tab)
+        await self._ensure_rpc_ready(tab)
+        tab.rpc_session_id = str(uuid.uuid4())
+        tab.thread_url = f"{muse.SITE}/thread/{tab.rpc_session_id}"
 
     # ------------------------------------------------------------ input
     async def _attach(self, tab: _Tab, images: list[InputImage]) -> None:
+        if not images:
+            return
+        await self._ensure_rpc_ready(tab)
+        import uuid
         for idx, img in enumerate(images):
             ext = img.mime.split("/")[-1].replace("jpeg", "jpg")
-            res = await tab.session.evaluate(
-                dom.attach_file(base64.b64encode(img.data).decode(), img.mime, f"input_{idx}.{ext}")
-            )
+            remote_path = f"workspace/imagine_media/input_{uuid.uuid4().hex[:8]}_{idx}.{ext}"
+            b64 = base64.b64encode(img.data).decode()
+            js = f"""(async () => {{
+                const snap = window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot();
+                await snap.sendRequest("fs.write", {{
+                    path: {dom.q(remote_path)},
+                    data_base64: {dom.q(b64)},
+                    overwrite: true,
+                    append: false,
+                    create_parent: true
+                }});
+                return {{ok: true, path: {dom.q(remote_path)}}};
+            }})()"""
+            res = await tab.session.evaluate(js, await_promise=True, timeout=60.0)
             if not (res or {}).get("ok"):
-                raise UpstreamError(f"failed to attach image: {(res or {}).get('err')}")
-        if images:
-            await asyncio.sleep(1.0)
+                raise UpstreamError(f"failed to upload image via Noise RPC fs.write: {res}")
+            tab.rpc_uploads.append(remote_path)
 
     async def _send(self, tab: _Tab, prompt: str) -> None:
-        res = await tab.session.evaluate(dom.fill_input(prompt))
+        import uuid
+        await self._ensure_rpc_ready(tab)
+        if not tab.rpc_session_id:
+            tab.rpc_session_id = str(uuid.uuid4())
+            tab.thread_url = f"{muse.SITE}/thread/{tab.rpc_session_id}"
+        full_prompt = prompt
+        if tab.rpc_uploads:
+            refs = ", ".join(tab.rpc_uploads)
+            full_prompt = f"[Reference image file(s) already saved in workspace at: {refs}]\n{prompt}"
+            tab.rpc_uploads = []
+        js = f"""(async () => {{
+            const snap = window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot();
+            const devId = localStorage.getItem("hatch:debug:device-id") || crypto.randomUUID();
+            const r = await snap.sendRequest("chat.stream", {{
+                message: {dom.q(full_prompt)},
+                node_id: devId,
+                capabilities: [],
+                session_id: {dom.q(tab.rpc_session_id)},
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Saigon"
+            }});
+            return {{ok: true, session_id: r.session_id || {dom.q(tab.rpc_session_id)}}};
+        }})()"""
+        res = await tab.session.evaluate(js, await_promise=True, timeout=30.0)
         if not (res or {}).get("ok"):
-            raise UpstreamError(f"cannot fill chat input: {(res or {}).get('err')}")
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline:
-            if await tab.session.evaluate(dom.CLICK_SEND) == "clicked":
-                return
-            await asyncio.sleep(0.1)
-        for kind in ("keyDown", "keyUp"):
-            await tab.session.send(
-                "Input.dispatchKeyEvent",
-                {"type": kind, "key": "Enter", "code": "Enter", "windowsVirtualKeyCode": 13,
-                 **({"text": "\r"} if kind == "keyDown" else {})},
-            )
-        await asyncio.sleep(0.5)
-        if not await tab.session.evaluate(dom.INPUT_EMPTY):
-            raise UpstreamError("send button not found and Enter did not submit")
+            raise UpstreamError(f"Noise RPC chat.stream failed: {res}")
 
     async def _state(self, tab: _Tab) -> dict:
-        state = await tab.session.evaluate(dom.CHAT_STATE) or {}
+        if not tab.rpc_session_id:
+            return {"agentCount": 0, "lastText": "", "generating": False, "attachments": [], "tail": "", "approval": False}
+        await self._ensure_rpc_ready(tab)
+        js = f"""(async () => {{
+            const snap = window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot();
+            let h;
+            try {{
+                h = await snap.sendRequest("chat.history", {{session_id: {dom.q(tab.rpc_session_id)}}});
+            }} catch (e) {{
+                return {{agentCount: 0, lastText: "", generating: false, attachments: [], tail: "", approval: false}};
+            }}
+            const evs = h.chat_events || [];
+            const users = evs.filter(e => e.role === "user");
+            const assts = evs.filter(e => e.role === "assistant");
+            const lastAsst = assts.length > 0 ? assts[assts.length - 1] : null;
+            const lastText = lastAsst ? (lastAsst.display_text || (lastAsst.payload && lastAsst.payload.content) || "") : "";
+            const lastStatus = lastAsst && lastAsst.payload ? lastAsst.payload.status : "";
+            const generating = (users.length > assts.length) || Boolean(lastAsst && lastStatus !== "completed");
+            const attachments = [];
+            for (const a of assts) {{
+                for (const r of (a.resources || [])) {{
+                    let meta = {{}};
+                    try {{ meta = typeof r.metadata === "string" ? JSON.parse(r.metadata) : (r.metadata || {{}}); }} catch (e) {{}}
+                    const p = meta.path || (r.uri ? r.uri.replace("sandbox://", "") : "");
+                    if (p) {{
+                        attachments.push({{
+                            kind: r.kind || (p.endsWith(".mp4") ? "video" : "image"),
+                            src: "rpc://" + p,
+                            tid: r.label || p,
+                            w: meta.width || 0,
+                            h: meta.height || 0,
+                            mime: r.mime_type || meta.mime_type || ""
+                        }});
+                    }}
+                }}
+            }}
+            return {{
+                agentCount: assts.length,
+                lastText,
+                generating,
+                attachments,
+                tail: lastText,
+                approval: false
+            }};
+        }})()"""
+        state = await tab.session.evaluate(js, await_promise=True, timeout=20.0) or {}
         tail = state.get("tail", "")
         low = tail.lower()
         if hit := next((h for h in dom.QUOTA_HINTS if h in low), None):
             i = low.find(hit)
             snippet = " ".join(tail[max(0, i - 120):i + 120].split())
-            # The page tail also holds the prompt and the thread-history sidebar, and
-            # matching it cooled down accounts whose images muse.ai went on to deliver.
-            # Only a finished agent reply that says so counts; anything else is logged.
             reply = state.get("lastText", "")
             if not state.get("generating") and hit in reply.lower():
                 log.warning("quota hint %r in reply on %s: %s", hit,
@@ -478,6 +571,12 @@ class BrowserDriver(MuseDriver):
         return bool(present)
 
     async def _open_saved(self, tab: _Tab) -> None:
+        if tab.thread_url and "/thread/" in tab.thread_url:
+            sid = tab.thread_url.rsplit("/thread/", 1)[-1].split("?")[0].strip("/")
+            if sid and sid != "new":
+                await self._ensure_rpc_ready(tab)
+                tab.rpc_session_id = sid
+                return
         await tab.session.send("Page.navigate", {"url": tab.thread_url})
         deadline = time.monotonic() + self.settings.page_ready_timeout
         while time.monotonic() < deadline:
@@ -574,12 +673,13 @@ class BrowserDriver(MuseDriver):
             raise UpstreamError(f"browser error: {exc}") from exc
         finally:
             if finished:
-                url = ""
-                for _ in range(10):
-                    url = await self._href(tab)
-                    if is_thread_url(url):
-                        break
-                    await asyncio.sleep(0.2)
+                url = tab.thread_url if tab.rpc_session_id else ""
+                if not url:
+                    for _ in range(10):
+                        url = await self._href(tab)
+                        if is_thread_url(url):
+                            break
+                        await asyncio.sleep(0.2)
                 self._save_hot(tab, account, req, url if is_thread_url(url) else "")
                 if tab.thread_url:
                     log.info("saved hot page %s", tab.thread_url)
@@ -769,11 +869,31 @@ class BrowserDriver(MuseDriver):
         return cands[0] if cands and score(cands[0]) > 0 else None
 
     async def _download(self, tab: _Tab, att: dict, kind: str) -> MediaResult:
-        res = await tab.session.evaluate(dom.fetch_as_base64(att["src"]), await_promise=True,
-                                         timeout=300)
+        src = att.get("src") or ""
+        if src.startswith("rpc://"):
+            rpc_path = src[len("rpc://"):]
+            js = f"""(async () => {{
+                try {{
+                    const snap = window.__hatchEarlyGatewayRuntimeState.activeRuntime.getSnapshot();
+                    const blob = await snap.sendRequest("fs.raw", {{path: {dom.q(rpc_path)}}});
+                    const b64 = await new Promise((res, rej) => {{
+                        const r = new FileReader();
+                        r.onload = () => res(r.result.split(",")[1]);
+                        r.onerror = () => rej(r.error);
+                        r.readAsDataURL(blob);
+                    }});
+                    return {{ok: true, b64, mime: blob.type || ""}};
+                }} catch (e) {{
+                    return {{ok: false, err: String(e)}};
+                }}
+            }})()"""
+            res = await tab.session.evaluate(js, await_promise=True, timeout=300)
+        else:
+            res = await tab.session.evaluate(dom.fetch_as_base64(src), await_promise=True,
+                                             timeout=300)
         if not (res or {}).get("ok"):
             raise UpstreamError(f"failed to download generated {kind}: {(res or {}).get('err')}")
-        mime = res.get("mime") or ("video/mp4" if kind == "video" else "image/png")
+        mime = res.get("mime") or att.get("mime") or ("video/mp4" if kind == "video" else "image/png")
         return MediaResult(data=base64.b64decode(res["b64"]), mime=mime, kind=kind,
                            width=att.get("w") or None, height=att.get("h") or None)
 
@@ -1075,13 +1195,15 @@ class BrowserDriver(MuseDriver):
         email, mail_url = muse.parse_account_string("", email=email, mail_url=mail_url)
         if not email or "@" not in email:
             raise UpstreamAuthError("valid email address is required for auto-login")
-        since_id = await muse.get_latest_tinyhost_id(email)
+        since_id = await muse.get_latest_tinyhost_id(email) if "tinyhost.shop" in mail_url else 0
         assert self._chromium
         browser = await self._browser_session()
         ctx_res = await browser.send("Target.createBrowserContext", {"disposeOnDetach": True})
         context_id = ctx_res["browserContextId"]
         target_id = ""
+        mail_target_id = ""
         session: CDPSession | None = None
+        mail_session: CDPSession | None = None
         try:
             t_res = await browser.send(
                 "Target.createTarget",
@@ -1095,6 +1217,28 @@ class BrowserDriver(MuseDriver):
                 await session.send(f"{domain}.enable")
             await session.send("Emulation.setFocusEmulationEnabled", {"enabled": True})
             await session.send("Page.setWebLifecycleState", {"state": "active"})
+
+            existing_codes: set[str] = set()
+            if mail_url and "tinyhost.shop" not in mail_url:
+                mt_res = await browser.send(
+                    "Target.createTarget",
+                    {"url": mail_url, "browserContextId": context_id, "newWindow": False},
+                )
+                mail_target_id = mt_res["targetId"]
+                mail_session = await CDPSession.connect(
+                    f"ws://127.0.0.1:{self._chromium.port}/devtools/page/{mail_target_id}"
+                )
+                for domain in ("Page", "Runtime"):
+                    await mail_session.send(f"{domain}.enable")
+                await asyncio.sleep(2.0)
+                pre_codes = await mail_session.evaluate(
+                    """(() => {
+                      const txt = document.body ? document.body.innerText : '';
+                      return (txt.match(/\\b\\d{6}\\b/g) || []);
+                    })()"""
+                )
+                if isinstance(pre_codes, list):
+                    existing_codes.update(str(c) for c in pre_codes)
 
             # 1. Wait for email input and submit email
             deadline = time.monotonic() + 30.0
@@ -1151,54 +1295,108 @@ class BrowserDriver(MuseDriver):
                     break
                 await asyncio.sleep(0.5)
 
-            # 3. Fetch 6-digit OTP from TinyHost API
-            log.info("waiting for OTP code for %s from TinyHost (since_id=%d)...", email, since_id)
-            otp = await muse.fetch_tinyhost_otp(email, since_id=since_id, timeout=65.0)
-            log.info("received OTP code for %s: %s", email, otp)
+            # 3. Fetch 6-digit OTP from TinyHost API or open webmail tab (e.g. generator.email)
+            otp = ""
+            if mail_session is None:
+                log.info("waiting for OTP code for %s from TinyHost (since_id=%d)...", email, since_id)
+                otp = await muse.fetch_tinyhost_otp(email, since_id=since_id, timeout=65.0)
+                log.info("received OTP code for %s: %s", email, otp)
+            else:
+                log.info("waiting for OTP code for %s from webmail tab (%s)...", email, mail_url)
+                webmail_deadline = time.monotonic() + 180.0
+                last_reload = time.monotonic()
+                while time.monotonic() < webmail_deadline:
+                    await asyncio.sleep(1.5)
+                    # Check if user already entered OTP or logged in manually on the muse.ai tab
+                    already_past_otp = await session.evaluate(
+                        """(() => {
+                          const body = (document.body ? document.body.innerText : '').toLowerCase();
+                          if (body.includes('confirm you')) return true;
+                          if (!body.includes('enter your code') && !body.includes('6-digit') &&
+                              document.querySelector('textarea, [contenteditable="true"]')) return true;
+                          return false;
+                        })()"""
+                    )
+                    if already_past_otp:
+                        log.info("user manually completed OTP step on muse.ai tab for %s", email)
+                        break
 
-            # 4. Enter OTP and submit
-            await session.evaluate(
-                """(() => {
-                  const inp = document.querySelector('form input:not([type="checkbox"]):not([type="hidden"])')
-                              || document.querySelector('input');
-                  if (inp) {
-                    inp.focus();
-                    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-                    setter.call(inp, '');
-                    inp.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-                })()"""
-            )
-            await session.send("Input.insertText", {"text": otp})
-            await asyncio.sleep(0.4)
-            await session.evaluate(
-                f"""(() => {{
-                  const inp = document.querySelector('form input:not([type="checkbox"]):not([type="hidden"])')
-                              || document.querySelector('input');
-                  if (inp && inp.value !== {dom.q(otp)}) {{
-                    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-                    setter.call(inp, {dom.q(otp)});
-                    inp.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                    inp.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                  }}
-                  const nextBtn = [...document.querySelectorAll('form button, button[type="submit"]')]
-                    .find(b => !b.disabled && /next|continue|verify|log in|submit/i.test(b.innerText || ''));
-                  if (nextBtn) nextBtn.click();
-                }})()"""
-            )
-            for kind in ("keyDown", "keyUp"):
-                await session.send(
-                    "Input.dispatchKeyEvent",
-                    {"type": kind, "key": "Enter", "code": "Enter", "windowsVirtualKeyCode": 13,
-                     **({"text": "\r"} if kind == "keyDown" else {})},
+                    # Poll webmail tab for a 6-digit verification code
+                    found_codes = await mail_session.evaluate(
+                        """(() => {
+                          const txt = document.body ? document.body.innerText : '';
+                          const prioritized = [];
+                          const re = /(?:code|meta|muse|confirmation|security|login)[^0-9]{0,40}(\\d{6})\\b|\\b(\\d{6})[^0-9]{0,40}(?:is your|verification|code|meta)/gi;
+                          let m;
+                          while ((m = re.exec(txt)) !== null) {
+                            prioritized.push(m[1] || m[2]);
+                          }
+                          const all = txt.match(/\\b\\d{6}\\b/g) || [];
+                          return [...prioritized, ...all];
+                        })()"""
+                    )
+                    if isinstance(found_codes, list):
+                        for c in found_codes:
+                            cs = str(c)
+                            if cs not in existing_codes:
+                                otp = cs
+                                break
+                    if otp:
+                        log.info("received OTP code for %s from webmail tab: %s", email, otp)
+                        break
+
+                    if time.monotonic() - last_reload > 8.0:
+                        mail_body = (await mail_session.evaluate("document.body ? document.body.innerText : ''") or "").lower()
+                        if "remove the limit" not in mail_body and "access temporarily limited" not in mail_body:
+                            with contextlib.suppress(Exception):
+                                await mail_session.send("Page.reload", {"ignoreCache": False})
+                        last_reload = time.monotonic()
+
+            # 4. Enter OTP and submit (if we extracted otp)
+            if otp:
+                await session.send("Page.bringToFront")
+                await session.evaluate(
+                    """(() => {
+                      const inp = document.querySelector('form input:not([type="checkbox"]):not([type="hidden"])')
+                                  || document.querySelector('input');
+                      if (inp) {
+                        inp.focus();
+                        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                        setter.call(inp, '');
+                        inp.dispatchEvent(new Event('input', { bubbles: true }));
+                      }
+                    })()"""
                 )
+                await session.send("Input.insertText", {"text": otp})
+                await asyncio.sleep(0.4)
+                await session.evaluate(
+                    f"""(() => {{
+                      const inp = document.querySelector('form input:not([type="checkbox"]):not([type="hidden"])')
+                                  || document.querySelector('input');
+                      if (inp && inp.value !== {dom.q(otp)}) {{
+                        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                        setter.call(inp, {dom.q(otp)});
+                        inp.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        inp.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                      }}
+                      const nextBtn = [...document.querySelectorAll('form button, button[type="submit"]')]
+                        .find(b => !b.disabled && /next|continue|verify|log in|submit/i.test(b.innerText || ''));
+                      if (nextBtn) nextBtn.click();
+                    }})()"""
+                )
+                for kind in ("keyDown", "keyUp"):
+                    await session.send(
+                        "Input.dispatchKeyEvent",
+                        {"type": kind, "key": "Enter", "code": "Enter", "windowsVirtualKeyCode": 13,
+                         **({"text": "\r"} if kind == "keyDown" else {})},
+                    )
 
-            # 5. Wait for session cookies to be issued
-            cookie_deadline = time.monotonic() + 25.0
+            # 5. Wait for session cookies to be issued (up to 300s if human verification checkpoint appears)
+            cookie_deadline = time.monotonic() + 300.0
             cookies: dict[str, str] = {}
             expires: dict[str, int] = {}
             while time.monotonic() < cookie_deadline:
-                await asyncio.sleep(0.8)
+                await asyncio.sleep(1.0)
                 c_res = await session.send("Network.getCookies", {"urls": ["https://muse.ai", "https://www.muse.ai"]})
                 for c in c_res.get("cookies", []):
                     name, val = c.get("name"), c.get("value")
@@ -1208,13 +1406,15 @@ class BrowserDriver(MuseDriver):
                             expires[name] = int(c["expires"])
                 logged_in_dom = await session.evaluate(
                     """(() => {
+                      const host = location.hostname || '';
+                      if (!host.endsWith('muse.ai')) return false;
                       const body = (document.body ? document.body.innerText : '').toLowerCase();
-                      if (body.includes('enter your code') || body.includes('6-digit')) return false;
+                      if (body.includes('enter your code') || body.includes('6-digit') || body.includes('confirm you')) return false;
                       return Boolean(document.querySelector('textarea, [contenteditable="true"]'));
                     })()"""
                 )
-                if (cookies.get("__Host-hatch_one_tap") or logged_in_dom) and cookies.get("hatch_sess"):
-                    await asyncio.sleep(1.0)
+                if logged_in_dom and cookies.get("hatch_sess"):
+                    await asyncio.sleep(1.5)
                     c_res2 = await session.send("Network.getCookies", {"urls": ["https://muse.ai", "https://www.muse.ai"]})
                     for c in c_res2.get("cookies", []):
                         name, val = c.get("name"), c.get("value")
@@ -1237,6 +1437,12 @@ class BrowserDriver(MuseDriver):
             except Exception:
                 return SessionInfo(ok=True, cookies=cookies, cookie_expires=expires, meta={"email": email})
         finally:
+            if mail_session:
+                with contextlib.suppress(Exception):
+                    await mail_session.close()
+            if mail_target_id:
+                with contextlib.suppress(Exception):
+                    await browser.send("Target.closeTarget", {"targetId": mail_target_id})
             if session:
                 with contextlib.suppress(Exception):
                     await session.close()

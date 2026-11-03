@@ -18,101 +18,104 @@
 
 ---
 
-## 🎥 Live Video Demo Gallery (Embedded Previews + MP4 Downloads)
+## 🎥 Live Video Demo Gallery (Auto-Play Previews + Instant Browser Video Player with Audio)
+
+> 🌐 **Live Interactive 1080p Cinema Player (All 9 Videos with Audio):** [**`https://ducanh3005.github.io/muse2api-video-studio/`**](https://ducanh3005.github.io/muse2api-video-studio/)  
+> 💡 *All animated previews below play automatically right inside GitHub. Click any preview or **"🔊 Play 1080p with Sound"** link to watch immediately with full audio in your browser!*
 
 ### Part A — 10-Second English Talking-Animal Comedy Skits (`1920x1080` Full HD, `10s`)
 
 #### 1. 🐱🐶 *The Birthday Cake Interrogation* — Detective Cat & Guilty Golden Retriever (`10s`, English Dialogue)
 * **Spoken Line (British Detective Cat):** *"Look me in the eyes, Barnaby! You expect me to believe the birthday cake jumped off the table and attacked your nose?!"*
-* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_1_detective_cat_dog_10s.mp4`**](docs/demos/skit_1_detective_cat_dog_10s.mp4)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `skit_1_detective_cat_dog_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_1_detective_cat_dog_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/skit_1_detective_cat_dog_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame (`1920x1080`) |
 | :---: | :---: |
-| ![Detective Cat & Dog 10s GIF](docs/demos/skit_1_detective_cat_dog_10s.gif) | ![Detective Cat & Dog 10s Poster](docs/demos/skit_1_detective_cat_dog_10s.jpg) |
+| [![Detective Cat & Dog 10s GIF](docs/demos/skit_1_detective_cat_dog_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_1_detective_cat_dog_10s.mp4) | [![Detective Cat & Dog 10s Poster](docs/demos/skit_1_detective_cat_dog_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_1_detective_cat_dog_10s.mp4) |
 
 ---
 
 #### 2. 🐹🐻 *Personal Trainer Hamster & The Grizzly Bear* (`10s`, English Dialogue)
 * **Spoken Line (Gym Coach Hamster):** *"Come on Big Bruno, don't quit on me now! Those two-pound pink dumbbells aren't gonna lift themselves, lightweight baby!"*
-* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_2_gym_hamster_bear_10s.mp4`**](docs/demos/skit_2_gym_hamster_bear_10s.mp4)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `skit_2_gym_hamster_bear_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_2_gym_hamster_bear_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/skit_2_gym_hamster_bear_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame (`1920x1080`) |
 | :---: | :---: |
-| ![Gym Hamster & Bear 10s GIF](docs/demos/skit_2_gym_hamster_bear_10s.gif) | ![Gym Hamster & Bear 10s Poster](docs/demos/skit_2_gym_hamster_bear_10s.jpg) |
+| [![Gym Hamster & Bear 10s GIF](docs/demos/skit_2_gym_hamster_bear_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_2_gym_hamster_bear_10s.mp4) | [![Gym Hamster & Bear 10s Poster](docs/demos/skit_2_gym_hamster_bear_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_2_gym_hamster_bear_10s.mp4) |
 
 ---
 
 #### 3. 🐧🐸 *Late-Night Animal Gossip Podcast* — Emperor Penguin & Sassy Tree Frog (`10s`, English Dialogue)
 * **Spoken Line (Sassy Tree Frog):** *"And I told her, honey, if that toad is still hopping into other lily pads at midnight, he is definitely not your prince!"*
-* **▶️ Watch / Download 1080p MP4 Video (with Audio):** [**`docs/demos/skit_3_podcast_penguin_frog_10s.mp4`**](docs/demos/skit_3_podcast_penguin_frog_10s.mp4)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `skit_3_podcast_penguin_frog_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_3_podcast_penguin_frog_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/skit_3_podcast_penguin_frog_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame (`1920x1080`) |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame (`1920x1080`) |
 | :---: | :---: |
-| ![Podcast Penguin & Frog 10s GIF](docs/demos/skit_3_podcast_penguin_frog_10s.gif) | ![Podcast Penguin & Frog 10s Poster](docs/demos/skit_3_podcast_penguin_frog_10s.jpg) |
+| [![Podcast Penguin & Frog 10s GIF](docs/demos/skit_3_podcast_penguin_frog_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_3_podcast_penguin_frog_10s.mp4) | [![Podcast Penguin & Frog 10s Poster](docs/demos/skit_3_podcast_penguin_frog_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=skit_3_podcast_penguin_frog_10s.mp4) |
 
 ---
 
 ### Part B — 10-Second Slapstick & Vietnamese Talking-Animal Skits (`10s`)
 
 #### 4. 🐛💨 Larva Sewer Worms Skit #1 — *The Green Aroma Cloud Attack* (`10s`)
-* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_1_larva_fart_attack_10s.mp4`**](docs/demos/demo_1_larva_fart_attack_10s.mp4)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `demo_1_larva_fart_attack_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_1_larva_fart_attack_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/demo_1_larva_fart_attack_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame |
 | :---: | :---: |
-| ![Larva Fart Attack 10s GIF](docs/demos/demo_1_larva_fart_attack_10s.gif) | ![Larva Fart Attack 10s Poster](docs/demos/demo_1_larva_fart_attack_10s.jpg) |
+| [![Larva Fart Attack 10s GIF](docs/demos/demo_1_larva_fart_attack_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_1_larva_fart_attack_10s.mp4) | [![Larva Fart Attack 10s Poster](docs/demos/demo_1_larva_fart_attack_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_1_larva_fart_attack_10s.mp4) |
 
 ---
 
-#### 2. 🐛🧄 Larva Sewer Worms Skit #2 — *Garlic Breath Dizzy Stars Counterattack* (`10s`)
-* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_2_larva_garlic_breath_10s.mp4`**](docs/demos/demo_2_larva_garlic_breath_10s.mp4)
+#### 5. 🐛🧄 Larva Sewer Worms Skit #2 — *Garlic Breath Dizzy Stars Counterattack* (`10s`)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `demo_2_larva_garlic_breath_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_2_larva_garlic_breath_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/demo_2_larva_garlic_breath_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame |
 | :---: | :---: |
-| ![Larva Garlic Breath 10s GIF](docs/demos/demo_2_larva_garlic_breath_10s.gif) | ![Larva Garlic Breath 10s Poster](docs/demos/demo_2_larva_garlic_breath_10s.jpg) |
+| [![Larva Garlic Breath 10s GIF](docs/demos/demo_2_larva_garlic_breath_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_2_larva_garlic_breath_10s.mp4) | [![Larva Garlic Breath 10s Poster](docs/demos/demo_2_larva_garlic_breath_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_2_larva_garlic_breath_10s.mp4) |
 
 ---
 
-#### 3. 🐐🎒 Bipedal Student Goats Skit — *Late for School on the Narrow Bridge* (`10s`)
-* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_3_student_goats_bridge_10s.mp4`**](docs/demos/demo_3_student_goats_bridge_10s.mp4)
+#### 6. 🐐🎒 Bipedal Student Goats Skit — *Late for School on the Narrow Bridge* (`10s`)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `demo_3_student_goats_bridge_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_3_student_goats_bridge_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/demo_3_student_goats_bridge_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame |
 | :---: | :---: |
-| ![Student Goats Bridge 10s GIF](docs/demos/demo_3_student_goats_bridge_10s.gif) | ![Student Goats Bridge 10s Poster](docs/demos/demo_3_student_goats_bridge_10s.jpg) |
+| [![Student Goats Bridge 10s GIF](docs/demos/demo_3_student_goats_bridge_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_3_student_goats_bridge_10s.mp4) | [![Student Goats Bridge 10s Poster](docs/demos/demo_3_student_goats_bridge_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_3_student_goats_bridge_10s.mp4) |
 
 ---
 
-#### 4. 🐐🌲 Talking Animals Face-Off — *White Goat & Black Goat on the Log Bridge* (`10s`)
-* **▶️ Watch / Download MP4 Video (with Audio):** [**`docs/demos/demo_4_talking_goats_skit_10s.mp4`**](docs/demos/demo_4_talking_goats_skit_10s.mp4)
+#### 7. 🐐🌲 Talking Animals Face-Off — *White Goat & Black Goat on the Log Bridge* (`10s`)
+* **🔊 Play 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `demo_4_talking_goats_skit_10s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_4_talking_goats_skit_10s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/demo_4_talking_goats_skit_10s.mp4)
 
-| Animated Preview (GIF) | High-Res Frame |
+| Auto-Playing Preview (Click for Audio) | High-Res Frame |
 | :---: | :---: |
-| ![Talking Goats 10s GIF](docs/demos/demo_4_talking_goats_skit_10s.gif) | ![Talking Goats 10s Poster](docs/demos/demo_4_talking_goats_skit_10s.jpg) |
+| [![Talking Goats 10s GIF](docs/demos/demo_4_talking_goats_skit_10s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_4_talking_goats_skit_10s.mp4) | [![Talking Goats 10s Poster](docs/demos/demo_4_talking_goats_skit_10s.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=demo_4_talking_goats_skit_10s.mp4) |
 
 ---
 
-### Part B — Full 60-Second (`6 Scenes x 10s`) Multi-Scene Series with `Seed-VC 44.1kHz` Voice Sync
+### Part C — Full 60-Second (`6 Scenes x 10s`) Multi-Scene Series with `Seed-VC 44.1kHz` Voice Sync
 
-#### 5. 🐛💨 Full 60s Series: *Larva Sewer Worms Comedy — Fart vs. Stinky Breath* (`60s`, Voice-Locked)
-* **▶️ Watch / Download Full 60s MP4 (with `Seed-VC 44.1kHz` Synchronized Voices):** [**`docs/demos/showcase_larva_sewer_worms_60s.mp4`**](docs/demos/showcase_larva_sewer_worms_60s.mp4)
+#### 8. 🐛💨 Full 60s Series: *Larva Sewer Worms Comedy — Fart vs. Stinky Breath* (`60s`, Voice-Locked)
+* **🔊 Play Full 60s 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `showcase_larva_sewer_worms_60s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_larva_sewer_worms_60s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/showcase_larva_sewer_worms_60s.mp4)
 * **Acoustic F0 Synchronization (`Seed-VC 44.1kHz + RMVPE + BigVGAN`):**
   * **Yellow Worm (Left — Scenes 1, 3, 5):** `F0_median = 225.5 Hz / 236.2 Hz / 222.5 Hz`
   * **Red Worm (Right — Scenes 2, 4, 6):** `F0_median = 244.1 Hz / 243.0 Hz / 244.6 Hz` (`±0.8 Hz` precision across all 3 scenes!)
 
-| Animated Preview (GIF) | 6-Scene Continuity Storyboard (`0s–60s`) |
+| Auto-Playing Preview (Click for Audio) | 6-Scene Continuity Storyboard (`0s–60s`) |
 | :---: | :---: |
-| ![Larva Sewer Worms 60s GIF](docs/demos/showcase_larva_sewer_worms_60s.gif) | ![Larva Sewer Worms 6-Scene Grid](docs/demos/showcase_larva_sewer_worms_grid.jpg) |
+| [![Larva Sewer Worms 60s GIF](docs/demos/showcase_larva_sewer_worms_60s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_larva_sewer_worms_60s.mp4) | [![Larva Sewer Worms 6-Scene Grid](docs/demos/showcase_larva_sewer_worms_grid.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_larva_sewer_worms_60s.mp4) |
 
 ---
 
-#### 6. 🐐🎒 Full 60s Series: *Two Bipedal Student Goats on the Narrow Bridge* (`60s`, Voice-Locked)
-* **▶️ Watch / Download Full 60s MP4 (with `Seed-VC 44.1kHz` Synchronized Voices):** [**`docs/demos/showcase_student_goats_60s.mp4`**](docs/demos/showcase_student_goats_60s.mp4)
+#### 9. 🐐🎒 Full 60s Series: *Two Bipedal Student Goats on the Narrow Bridge* (`60s`, Voice-Locked)
+* **🔊 Play Full 60s 1080p Video with Sound (Instant Browser Player):** [**▶️ Click to Play `showcase_student_goats_60s.mp4` with Audio**](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_student_goats_60s.mp4) · [Direct `.mp4` Stream](https://ducanh3005.github.io/muse2api-video-studio/demos/showcase_student_goats_60s.mp4)
 * **Acoustic F0 Synchronization (`Seed-VC 44.1kHz + RMVPE + BigVGAN`):**
   * **White Student Goat (Left — Scenes 1, 3, 5):** `F0_median = 267.3 Hz / 261.9 Hz / 269.8 Hz`
   * **Black Student Goat (Right — Scenes 2, 4, 6):** `F0_median = 182.8 Hz / 181.7 Hz / 179.6 Hz`
 
-| Animated Preview (GIF) | 6-Scene Continuity Storyboard (`0s–60s`) |
+| Auto-Playing Preview (Click for Audio) | 6-Scene Continuity Storyboard (`0s–60s`) |
 | :---: | :---: |
-| ![Student Goats 60s GIF](docs/demos/showcase_student_goats_60s.gif) | ![Student Goats 6-Scene Grid](docs/demos/showcase_student_goats_grid.jpg) |
+| [![Student Goats 60s GIF](docs/demos/showcase_student_goats_60s.gif)](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_student_goats_60s.mp4) | [![Student Goats 6-Scene Grid](docs/demos/showcase_student_goats_grid.jpg)](https://ducanh3005.github.io/muse2api-video-studio/?v=showcase_student_goats_60s.mp4) |
 
 ---
 
